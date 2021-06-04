@@ -60,7 +60,7 @@ namespace Movies.Controllers
             return NoContent();
         }
         [HttpPatch("{id}", Name = "Patch")]
-        public ActionResult Patch(int id, [FromBody] JsonPatchDocument<UpdateMovie> patchDocument)
+        public ActionResult Patch(int id, [FromBody]JsonPatchDocument<UpdateMovie> patchDocument)
         {
             Movie oldMovie = _repository.getById(id);
             UpdateMovie movie = _mapper.Map<UpdateMovie>(oldMovie);

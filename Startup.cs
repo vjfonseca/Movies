@@ -75,7 +75,7 @@ namespace Movies
             {
                 // endpoints.MapControllerRoute(
                 // name: "default",
-                // pattern: "{controller}/{action}");
+                // pattern: "{controller}/");
                 endpoints.MapControllers();
             });
         }
