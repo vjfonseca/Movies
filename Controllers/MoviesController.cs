@@ -11,8 +11,7 @@ using Microsoft.AspNetCore.JsonPatch;
 
 namespace Movies.Controllers
 {
-    [Route("api/movies")]
-    [ApiController]
+    [Route("Movies")]
     public class MoviesController : ControllerBase
     {
         private readonly IMovieRepo _repository;
@@ -30,81 +29,80 @@ namespace Movies.Controllers
             _repository.SaveChanges();
             return NoContent();
         }
-        [HttpGet("", Name = "GetAll")]
-        public ActionResult<IEnumerable<MovieRead>> GetAll()
+        [HttpGet(Name = "All")]
+        public ActionResult<IEnumerable<MovieRead>> All()
         {
             var movies = _repository.getAll();
             return Ok(_mapper.Map<IEnumerable<MovieRead>>(movies));
         }
-        [HttpPost("")]
-        public ActionResult Create(MovieWrite write)
+        [HttpPost(Name = "Create")]
+        public ActionResult Create([FromBody] MovieWrite write)
         {
             var movie = _mapper.Map<Movie>(write);
             _repository.add(movie);
             _repository.SaveChanges();
             var read = _mapper.Map<MovieRead>(movie);
-            return CreatedAtRoute(nameof(GetById), new { Id = read.Id }, read);
+            return CreatedAtRoute(nameof(Get), new { Id = read.Id }, read);
         }
-        [HttpGet("{id}", Name = "GetById")]
-        public ActionResult<MovieRead> GetById(int id)
+        [HttpGet("{id}", Name = "Get")]
+        public ActionResult<MovieRead> Get(int id)
         {
             var movie = _repository.getById(id);
             var read = _mapper.Map<MovieRead>(movie);
             return Ok(read);
         }
-
-        [HttpPost("actors")]
-        public ActionResult<ActorRead> CreateActor(ActorWrite write)
+        [HttpPut(Name = "Put")]
+        public ActionResult<MovieRead> Put([FromBody]UpdateMovie update)
         {
-            var actor = _mapper.Map<Actor>(write);
-            _repository.AddActor(actor);
-            _repository.SaveChanges();
-            var created = _repository.GetActorById(actor.Id);
-            
-            return Ok(_mapper.Map<ActorRead>(created));
-        }
-        [HttpGet("actors")]
-        public ActionResult<IEnumerable<ActorRead>> GetActor()
-        {
-            var actors = _repository.GetActors();
-            return Ok(_mapper.Map<IEnumerable<ActorRead>>(actors));
-        }
-        [HttpDelete("actors/{id}")]
-        public ActionResult DeleteActor(int id)
-        {
-            _repository.DeleteActor(id);
+            var newMovie = _mapper.Map<Movie>(update);
+            _repository.Replace(newMovie);
             _repository.SaveChanges();
             return NoContent();
         }
-        [HttpGet("actors/{id}")]
-        public ActionResult<ActorRead> GetActorById(int id)
-        {
-            var actor = _repository.GetActorById(id);
-            var read = _mapper.Map<ActorRead>(actor);
-            return Ok(read);
-        }
-        [HttpPatch("{id}")]
-        public ActionResult<MovieRead> Patch(int id, JsonPatchDocument<UpdateMovie> patchDocument)
+        [HttpPatch("{id}", Name = "Patch")]
+        public ActionResult Patch(int id, [FromBody] JsonPatchDocument<UpdateMovie> patchDocument)
         {
             Movie oldMovie = _repository.getById(id);
             UpdateMovie movie = _mapper.Map<UpdateMovie>(oldMovie);
 
             patchDocument.ApplyTo(movie);
             Movie newValues = _mapper.Map<Movie>(movie);
-            _repository.Replace(newValues, oldMovie.Id);
+            _repository.Replace(newValues);
             _repository.SaveChanges();
 
-            var result = _mapper.Map<MovieRead>(_repository.getById(id));
-            return Ok(result);
+            return NoContent();
         }
-        [HttpPut("{id}")]
-        public ActionResult<MovieRead> Put(int id, UpdateMovie update)
+        [HttpPost("Actors", Name = "CreateActor")]
+        public ActionResult CreateActor([FromBody] ActorWrite write)
         {
-            // id == update.id
-            var newMovie = _mapper.Map<Movie>(update);
-            var movie = _repository.Replace(newMovie, id);
+            var actor = _mapper.Map<Actor>(write);
+            _repository.AddActor(actor);
             _repository.SaveChanges();
-            return Ok(_mapper.Map<MovieRead>(movie));
+            var read = _repository.GetActorById(actor.Id);
+
+            return CreatedAtRoute(nameof(GetActorById), new { Id = read.Id }, read);
+        }
+        [HttpGet("Actors", Name = "GetActor")]
+        public ActionResult<IEnumerable<ActorRead>> GetActors()
+        {
+            var actors = _repository.GetActors();
+            return Ok(_mapper.Map<IEnumerable<ActorRead>>(actors));
+        }
+        [HttpDelete("Actors/{id}", Name = "DeleteActor")]
+        public ActionResult DeleteActor(int id)
+        {
+            if (_repository.GetActorById(id) == null) return BadRequest();
+            _repository.DeleteActor(id);
+            _repository.SaveChanges();
+            return NoContent();
+        }
+        [HttpGet("Actors/{id}", Name = "GetActorById")]
+        public ActionResult<ActorRead> GetActorById(int id)
+        {
+            var model = _repository.GetActorById(id);
+            if (model == null) return BadRequest();
+            var read = _mapper.Map<ActorRead>(model);
+            return Ok(read);
         }
     }
 }
