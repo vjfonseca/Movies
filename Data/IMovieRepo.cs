@@ -16,7 +16,7 @@ namespace Movies.Data
         public Actor GetActorById (int id);
         public IEnumerable<Actor> GetActors();
         public void DeleteActor(int id);
-        public Movie Replace(Movie newMovie, int id);
+        public void Replace(Movie newMovie);
         public Movie MapNested(Movie movie);
     }
 }

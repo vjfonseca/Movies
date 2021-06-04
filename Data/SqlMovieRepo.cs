@@ -59,11 +59,10 @@ namespace Movies.Data
         {
             return _context.SaveChanges() < 1;
         }
-        public Movie Replace(Movie newMovie, int id)
+        public void Replace(Movie newMovie)
         {
-            var old = getById(id);
+            var old = getById(newMovie.Id);
             EFWrapper.replaceActors(_context, newMovie, old);
-            return getById(id);
         }
         public Movie MapNested(Movie movie)
         {

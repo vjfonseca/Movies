@@ -32,6 +32,8 @@ namespace Movies
         {
             services.AddControllers();
 
+            services.AddScoped<IMovieRepoAsync, SqlMovieRepoAsync>();
+
             services.AddScoped<IMovieRepo, SqlMovieRepo>();
 
             services.AddDbContext<MovieContext>((opt) =>
@@ -71,6 +73,9 @@ namespace Movies
 
             app.UseEndpoints(endpoints =>
             {
+                // endpoints.MapControllerRoute(
+                // name: "default",
+                // pattern: "{controller}/{action}");
                 endpoints.MapControllers();
             });
         }
